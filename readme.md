@@ -1,1 +1,1 @@
-just see [demo](https://chunpu.github.com/gif-convert)
+just see [demo](http://chunpu.github.io/gif-convert)
