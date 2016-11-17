@@ -8,13 +8,19 @@ body {
 	font-family: consolas, monospace, 微软雅黑;
 }
 .panel {
-	box-shadow: 1px 2px 8px 1px rgba(0, 0, 0, 0.25);
-	-webkit-box-shadow: 1px 2px 8px 1px rgba(0, 0, 0, 0.25);
 	display: inline-block;
 	margin: 20px;
-	padding: 20px;
+	padding: 40px;
 	vertical-align: top;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
 }
+
+.panel img {
+	box-shadow: 1px 2px 8px 1px rgba(0, 0, 0, 0.25);
+	-webkit-box-shadow: 1px 2px 8px 1px rgba(0, 0, 0, 0.25);
+}
+
 .clearfix:before, .clearfix:after {
 	display: table;
 	content: '';
@@ -32,7 +38,7 @@ body {
 	<img id="src">
 </div>
 <div class="panel">
-	<h1>生成图</h1>
+	<h1>强制不循环图</h1>
 	<img id="dst">
 </div>
 <script>
