@@ -4,24 +4,28 @@
 	<meta charset="utf8">
 	<title>Gif 最后一帧拉长</title>
 	<style>
+body {
+	font-family: consolas, monospace, 微软雅黑;
+}
 .panel {
 	box-shadow: 1px 2px 8px 1px rgba(0, 0, 0, 0.25);
 	-webkit-box-shadow: 1px 2px 8px 1px rgba(0, 0, 0, 0.25);
 	display: inline-block;
-    margin: 20px;
-    padding: 20px;
-    vertical-align: top;
+	margin: 20px;
+	padding: 20px;
+	vertical-align: top;
 }
 .clearfix:before, .clearfix:after {
-    display: table;
-    content: '';
+	display: table;
+	content: '';
 }
 	</style>
 </head>
 <body>
-<div class="panel">
+<div class="panel" style="max-width: 250px;">
 	<h1>请选择 Gif</h1>
 	<input type="file" id="file">
+	<p>有些平台播放 Gif 不尊重 loopCount 属性, 因此通过拉长最后一帧来避免循环播放</p>
 </div>
 <div class="panel">
 	<h1>原图</h1>
@@ -32,16 +36,23 @@
 	<img id="dst">
 </div>
 <script>
-// 三部分, 一个按钮, 一个原图, 一个生成图
 var aEl = document.getElementById('a')
 var fileEl = document.getElementById('file')
 var srcImgEl = document.getElementById('src')
 var dstImgEl = document.getElementById('dst')
-var txtBlob = new Blob(['GIF89a'], {type : 'text/plain'})
-// changeBlob(txtBlob)
+var txtBlob = new Blob(['GIF89a'], {type : 'text/plain'}) // test
+
 showGifDemo()
-// console.log(blob)
 hideImg()
+
+fileEl.onchange = function(e) {
+	hideImg() // 先隐藏
+	var file = e.target.files[0]
+	if (file) {
+		changeBlob(file)
+	}
+}
+
 function hideImg() {
 	srcImgEl.style.display = 'none'
 	dstImgEl.style.display = 'none'
@@ -74,16 +85,8 @@ function getDataViewArray(dataView, start, end) {
 	return arr
 }
 
-fileEl.onchange = function(e) {
-	hideImg() // 先隐藏
-	var file = e.target.files[0]
-	if (file) {
-		changeBlob(file)
-	}
-}
-
-function longGifLastFrame(dataView) {
-
+function isBlobGif(blob) {
+	return -1 != blob.type.indexOf('gif')
 }
 
 // GIF GRAPHIC_CONTROL_EXT 格式
@@ -95,38 +98,35 @@ function changeBlob(blob) {
 	var arrayBuffer
 	var fileReader = new FileReader()
 	fileReader.onload = function() {
-	    arrayBuffer = this.result
-	    var dataView = new DataView(arrayBuffer, 0)
-	    var arr = getDataViewArray(dataView) // 可以打印
-	    var isGif = -1 != blob.type.indexOf('gif')
-	    if (isGif) {
+		arrayBuffer = this.result
+		var dataView = new DataView(arrayBuffer, 0)
+		var arr = getDataViewArray(dataView) // 可以打印
+		var isGif = -1 != blob.type.indexOf('gif')
+		if (isGif) {
 			var sep = '-'
-		    var binarySubStr = [0x21, 0xf9, 0x04].join(sep)
-		    var binaryStr = arr.join(sep)
-		    var split = binaryStr.split(binarySubStr)
-		    var lastPart = split[split.length - 1]
-		    var index = size - lastPart.split(sep).length
-		    var delayTimeIndex = index + 2
-		   	dataView.setUint8(delayTimeIndex, 0xff)
-		   	// dataView.setUint8(delayTimeIndex + 1, 0xff) // 拉的无敌长
+			var binarySubStr = [0x21, 0xf9, 0x04].join(sep)
+			var binaryStr = arr.join(sep)
+			var split = binaryStr.split(binarySubStr)
+			var lastPart = split[split.length - 1]
+			var index = size - lastPart.split(sep).length
+			var delayTimeIndex = index + 2
+			// dataView.setUint8(delayTimeIndex, 0) // ms = x * 10
+			dataView.setUint8(delayTimeIndex + 1, 0xff) // 拉的无敌长
 		}
 
-	    var dstBlob = new Blob([dataView.buffer], {type : blob.type})
-	    
-	    var dstUrl = URL.createObjectURL(dstBlob)
-	    var srcUrl = URL.createObjectURL(blob)
-	    if (isGif) {
-	    	dstImgEl.setAttribute('src', dstUrl)
-	    	dstImgEl.style.display = ''
-	    	srcImgEl.setAttribute('src', srcUrl)
-	    	srcImgEl.style.display = ''
-	    }
-	    
-	    // console.log(url)
+		var dstBlob = new Blob([dataView.buffer], {type : blob.type})
+		
+		var dstUrl = URL.createObjectURL(dstBlob)
+		var srcUrl = URL.createObjectURL(blob)
+		if (isGif) {
+			dstImgEl.setAttribute('src', dstUrl)
+			dstImgEl.style.display = ''
+			srcImgEl.setAttribute('src', srcUrl)
+			srcImgEl.style.display = ''
+		}
 	}
 	fileReader.readAsArrayBuffer(blob)
 }
-
 </script>
 </body>
 </html>
